@@ -1,5 +1,6 @@
 import collaborationApplicationModel from "../model/collaborationApplication.model.js";
 import collabModel from "../model/collab.model.js";
+import profileModel from "../model/profile.model.js";
 
 export default {
   async applyCollab(req, res) {
@@ -112,7 +113,8 @@ export default {
   },
 
   async getApplicants(req, res) {
-    try { // owner: lihat pelamar di setiap collaboration
+    try {
+      // owner: lihat pelamar di setiap collaboration
       const { collabId } = req.params;
       const collab = await collabModel.findById(collabId);
 
@@ -123,7 +125,7 @@ export default {
           data: null,
         });
       }
-      
+
       if (collab.userId.toString() !== req.user.id) {
         return res.status(403).json({
           success: false,
@@ -150,23 +152,70 @@ export default {
     }
   },
   async myApplications(req, res) {
-    try { //lihat lamaean kita di setiap collaboration
+    try {
+      //lihat lamaean kita di setiap collaboration
       const application = await collaborationApplicationModel
         .find({
           userId: req.user.id,
         })
-        .populate("collabId");
-        if (application.length === 0) {
-          return res.status(404).json({
-            success: false,
-            message: "Application not found",
-            data: null,
-          });
-        } 
+        .populate({
+          path: "collabId",
+          select: {
+            title: 1,
+            description: 1,
+            mediaUrls: 1,
+          },
+          populate: {
+            path: "userId",
+            select: {
+              username: 1,
+            },
+          },
+        });
+      if (application.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Application not found",
+          data: null,
+        });
+      }
+      const ownerIds = application.map((collab) => collab.userId._id);
+      const profiles = await profileModel.find({
+        userId: { $in: ownerIds },
+      });
+
+      const profileMap = {};
+      profiles.forEach((profile) => {
+        profileMap[profile.userId.toString()] = profile;
+      });
+
+      const dataComplete = application.map((app) => {
+        const ownerId = app.collabId.userId._id.toString();
+
+        const profile = profileMap[ownerId];
+
+        return {
+          applicationId: app._id,
+          status: app.status,
+          message: app.message,
+
+          collab: {
+            _id: app.collabId._id,
+            title: app.collabId.title,
+          },
+
+          owner: {
+            _id: ownerId,
+            username: app.collabId.userId.username,
+            photo_profile_url: profile?.photo_profile_url || "profile.png",
+          },
+        };
+      });
+
       res.status(200).json({
         success: true,
         message: "My applications",
-        data: application,
+        data: dataComplete,
       });
     } catch (error) {
       res.status(500).json({
@@ -180,10 +229,15 @@ export default {
   async myApplicationDetail(req, res) {
     try {
       const { applicationId } = req.params;
-
       const application = await collaborationApplicationModel
         .findById(applicationId)
-        .populate("collabId");
+        .populate({
+          path: "collabId",
+          populate: {
+            path: "userId",
+            select: "username",
+          },
+        });
 
       if (!application) {
         return res.status(404).json({
@@ -202,9 +256,24 @@ export default {
       }
 
       const response = {
-        status: application.status,
-        message: application.message,
-        collaboration: application.collabId.title,
+        application: {
+          status: application.status,
+          message: application.message,
+        },
+
+        collaboration: {
+          _id: application.collabId._id,
+          title: application.collabId.title,
+          description: application.collabId.description,
+          mediaUrls: application.collabId.mediaUrls,
+          requiredMember: application.collabId.requiredMember,
+          skillsNeeded: application.collabId.skillsNeeded,
+        },
+
+        owner: {
+          _id: application.collabId.userId._id,
+          username: application.collabId.userId.username,
+        },
       };
 
       if (application.status === "accepted") {

@@ -65,35 +65,31 @@ export default {
 
   async showCollab(req, res) {
     try {
-      const collabs = await collabModel
-        .find()
-        .sort({ createdAt: -1 })
-        .populate("userId", "username");
+      const collabs = await collabModel.find().populate("userId", "username");
       // console.log(collabs[0]);
-      if (!collabs || collabs.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "Collaboration Not Found!",
-          data: [],
-        });
-      }
-      const dataComplete = await Promise.all(
-        collabs.map(async (collab) => {
-          const userProfile = await profileModel.findOne({
-            userId: collab.userId._id,
-          });
+      const userIds = collabs.map((collab) => collab.userId._id);
+      const profiles = await profileModel.find({
+        userId: { $in: userIds },
+      });
+      const profileMap = {};
+      profiles.forEach((profile) => {
+        profileMap[profile.userId.toString()] = profile;
+      });
 
-          const collabObj = collab.toObject();
+      const dataComplete = collabs.map((collab) => {
+        const collabObj = collab.toObject();
+        const { userId, communicationUrl, ...collabData } = collabObj;
+        const profile = profileMap[userId._id.toString()];
 
-          if (collabObj.userId) {
-            collabObj.userId.photo_profile_url = userProfile
-              ? userProfile.photo_profile_url
-              : "profile.png";
-          }
-
-          return collabObj;
-        }),
-      );
+        return {
+          ...collabData,
+          ownerId: {
+            _id: collab.userId._id,
+            username: collab.userId.username,
+            photo_profile_url: profile?.photo_profile_url || "profile.png",
+          },
+        };
+      });
 
       res.status(200).json({
         success: true,
