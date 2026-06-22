@@ -12,7 +12,7 @@ const profileSchema = new Schema({
     type: String,
     default: "",
   },
-  universitas: {
+  institusi: {
     type: String,
     default: "",
   },
