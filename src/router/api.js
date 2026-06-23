@@ -10,19 +10,28 @@ import applicationController from "../controllers/application.controller.js";
 const router = Router();
 
 router.get("/", (req, res) => res.json("hallo"));
+
+// AUTH 
 router.post("/auth/register", authController.register);
 router.post("/auth/login", authController.login);
-router.get("/profiles/me", authMiddleware, authController.me);
 
-// PUT
+// PROFILES
+router.get("/profiles/me", authMiddleware, authController.me);
 router.put("/profiles/me", authMiddleware, profilesController.updateProfile);
 
-// ENDPOINT: PUBLIC POST
+// ENDPOINT:POST
 router.get("/posts/:postId", authMiddleware, postController.getPostDetail);
 router.get("/posts", postController.showCase); // tidak perlu authMiddleware
 router.post("/posts", authMiddleware, postController.createPost);
 router.put("/posts/:postId", authMiddleware, postController.updatePosts);
 router.delete("/posts/:postId", authMiddleware, postController.deletePost);
+// Like : masuk ke POST
+router.post("/posts/:postId/like", authMiddleware, postController.likePost);
+router.delete("/posts/:postId/unlike", authMiddleware, postController.unlikePost);
+// Comment: masuk ke POST
+router.post("/posts/:postId/comments", authMiddleware, postController.createComment);
+router.get("/posts/:postId/comments", authMiddleware, postController.getComments);
+router.delete("/delete/comments/:commentId", authMiddleware, postController.deleteComment);
 
 // COLLAB :
 router.get("/collab", authMiddleware, collabController.showCollab)
@@ -32,7 +41,7 @@ router.post("/collab", authMiddleware, collabController.addCollab);
 router.put("/collab/:id", authMiddleware, collabController.updateCollab);
 router.delete("/collab/:id", authMiddleware, collabController.deleteCollab);
 
-// 
+// FETCH ALL SKLL
 router.get("/skills", authMiddleware, async (req, res) => {
   const result = await skillModel.find();
   res.status(200).json({
@@ -41,15 +50,9 @@ router.get("/skills", authMiddleware, async (req, res) => {
     data: result,
   });
 });
-// Like 
-router.post("/posts/:postId/like", authMiddleware, postController.likePost);
-router.delete("/posts/:postId/unlike", authMiddleware, postController.unlikePost);
-// Comment
-router.post("/posts/:postId/comments", authMiddleware, postController.createComment);
-router.get("/posts/:postId/comments", authMiddleware, postController.getComments);
-router.delete("/delete/comments/:commentId", authMiddleware, postController.deleteComment);
 
-// application
+
+// APPLICATION
 router.get("/collab/:collabId/applications", authMiddleware, applicationController.getApplicants);
 router.get("/myapplications", authMiddleware, applicationController.myApplications);
 router.get("/myapplications/:applicationId", authMiddleware, applicationController.myApplicationDetail);

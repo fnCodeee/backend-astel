@@ -5,7 +5,7 @@ export default {
   async updateProfile(req, res) {
     try {
       const userId = req.user.id;
-      const { fullName, bio, photo_profile_url, socialMedia, skills } =
+      const { fullName, bio, photo_profile_url, socialMedia, skills, institusi } =
         req.body;
       const profile = await profileModel.findOne({ userId: req.user.id });
       if (!profile) {
@@ -33,6 +33,12 @@ export default {
           message: "socialMedia harus array",
         });
       }
+      if(institusi !== undefined && typeof institusi !== "string"){
+        return res.status(400).json({
+          success: false,
+          message: "institusi harus berupa string",
+        });
+      }
       if (skills && !Array.isArray(skills)) {
         return res.status(400).json({
           success: false,
@@ -50,7 +56,7 @@ export default {
         updateData.photo_profile_url = photo_profile_url;
 
       if (socialMedia !== undefined) updateData.socialMedia = socialMedia;
-
+      if (socialMedia !== undefined) updateData.institusi = institusi;
       if (skills !== undefined) updateData.skills = skills;
       const updateProfile = await profileModel.findOneAndUpdate(
         { userId },

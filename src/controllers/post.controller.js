@@ -97,8 +97,14 @@ export default {
     try {
       const { postId } = req.params;
       const userId = req.user.id;
+      
+      // Increment viewCount dan ambil post yang sudah diupdate
       const post = await postModel
-        .findById(postId)
+        .findByIdAndUpdate(
+          postId,
+          { $inc: { viewCount: 1 } },
+          { new: true }
+        )
         .populate("userId", "username");
 
       if (!post) {
@@ -130,12 +136,12 @@ export default {
         .find({ postId })
         .populate("userId", "username")
         .sort({ createdAt: -1 });
-
+      const {userId, ...postWithoutUserId} = post.toObject()
       res.status(200).json({
         success: true,
         message: "Post Detail added!",
         data: {
-          ...post.toObject(),
+          ...postWithoutUserId,
 
           ownerId: {
             _id: post.userId._id,

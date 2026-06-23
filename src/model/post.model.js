@@ -28,7 +28,11 @@ const publicPostSchema = new Schema(
     },
     mediaUrls: {
       type: [String],
-      dafault: [],
+      default: [],
+    },
+    viewCount: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true },
