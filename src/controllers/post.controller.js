@@ -99,9 +99,13 @@ export default {
       const userId = req.user.id;
 
       // Increment viewCount dan ambil post yang sudah diupdate
-      const post = await postModel.findByIdAndUpdate(postId, {
-        $inc: { viewCount: 1 },
-      });
+      const post = await postModel
+        .findByIdAndUpdate(
+          postId,
+          { $inc: { viewCount: 1 } },
+          { new: true }
+        )
+        .populate("userId", "username");
 
       if (!post) {
         return res.status(404).json({
