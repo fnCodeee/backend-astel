@@ -19,6 +19,8 @@ router.post("/auth/login", authController.login);
 router.get("/profiles/me", authMiddleware, authController.me);
 router.put("/profiles/me", authMiddleware, profilesController.updateProfile);
 
+router.get("/profiles/:userId", authMiddleware, profilesController.getProfile);
+
 // ENDPOINT:POST
 router.get("/posts/:postId", authMiddleware, postController.getPostDetail);
 router.get("/posts", postController.showCase); // tidak perlu authMiddleware

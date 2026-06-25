@@ -2,6 +2,49 @@ import profileModel from "../model/profile.model.js";
 import userModel from "../model/user.model.js";
 
 export default {
+
+  async getProfile(req, res) {
+    try {
+      const { userId }= req.params;
+      const user = await userModel.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User tidak ditemukan!" });
+      }
+      const profile = await profileModel
+        .findOne({ userId: user._id })
+        // .findOne({ userId: req.user.id })
+        .populate("skills");
+      const result = await userModel.findById(req.user.id);
+      const responseData = {
+        userId: user._id,
+        username: user.username,
+        fullName: profile.fullName,
+        bio: profile.bio,
+        photo_profile_url: profile.photo_profile_url,
+        skills: profile.skills
+          ? profile.skills.map((skill) => ({
+              _id: skill._id,
+              skillName: skill.skillName,
+            }))
+          : [],
+        socialMedia: profile.socialMedia || [],
+      };
+
+      res.status(200).json({
+        success: true,
+        message: "Berhasil Mendapatkan Data!",
+        data: responseData,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+    }
+  },
   async updateProfile(req, res) {
     try {
       const userId = req.user.id;
