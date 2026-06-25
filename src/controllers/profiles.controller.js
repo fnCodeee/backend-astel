@@ -2,10 +2,9 @@ import profileModel from "../model/profile.model.js";
 import userModel from "../model/user.model.js";
 
 export default {
-
   async getProfile(req, res) {
     try {
-      const { userId }= req.params;
+      const { userId } = req.params;
       const user = await userModel.findById(userId);
       if (!user) {
         return res
@@ -30,6 +29,7 @@ export default {
             }))
           : [],
         socialMedia: profile.socialMedia || [],
+        institusi: profile.institusi,
       };
 
       res.status(200).json({
@@ -48,8 +48,14 @@ export default {
   async updateProfile(req, res) {
     try {
       const userId = req.user.id;
-      const { fullName, bio, photo_profile_url, socialMedia, skills, institusi } =
-        req.body;
+      const {
+        fullName,
+        bio,
+        photo_profile_url,
+        socialMedia,
+        skills,
+        institusi,
+      } = req.body;
       const profile = await profileModel.findOne({ userId: req.user.id });
       if (!profile) {
         return res.status(404).json({
@@ -76,7 +82,7 @@ export default {
           message: "socialMedia harus array",
         });
       }
-      if(institusi !== undefined && typeof institusi !== "string"){
+      if (institusi !== undefined && typeof institusi !== "string") {
         return res.status(400).json({
           success: false,
           message: "institusi harus berupa string",
@@ -88,7 +94,6 @@ export default {
           message: "skills harus array",
         });
       }
-
 
       const updateData = {};
       if (fullName !== undefined) updateData.fullName = fullName;

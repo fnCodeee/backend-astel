@@ -136,6 +136,8 @@ export default {
             }))
           : [],
         socialMedia: profile.socialMedia || [],
+        institusi: profile.institusi,
+        
       };
 
       res.status(200).json({
