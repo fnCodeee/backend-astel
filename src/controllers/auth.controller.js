@@ -45,7 +45,7 @@ export default {
         userId: user._id,
         fullName: "",
         bio: "",
-        photo_profile_url: "profile.png",
+        photo_profile_url: "https://res.cloudinary.com/df9jelnu7/image/upload/v1782362663/profile_zngu0l.png",
         socialMedia: [],
         skills: [],
       });
