@@ -37,8 +37,8 @@ router.get("/posts/:postId/comments", authMiddleware, postController.getComments
 router.delete("/delete/comments/:commentId", authMiddleware, postController.deleteComment);
 
 // COLLAB :
+router.get("/profiles/:userId/collab", authMiddleware, collabController.yourCollabPost)
 router.get("/collab", authMiddleware, collabController.showCollab)
-router.get("/collab/me", authMiddleware, collabController.yourCollabPost)
 router.get("/collab/:id", authMiddleware, collabController.getCollabDetail)
 router.post("/collab", authMiddleware, collabController.addCollab);
 router.put("/collab/:id", authMiddleware, collabController.updateCollab);
