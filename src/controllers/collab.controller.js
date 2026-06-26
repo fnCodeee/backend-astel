@@ -107,7 +107,7 @@ export default {
   },
   async yourCollabPost(req, res) {
     try {
-      const userId = req.user.id;
+      const { userId } = req.params;
       const collabMe = await collabModel
         .find({
           userId: userId,
