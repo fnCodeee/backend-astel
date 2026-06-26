@@ -40,6 +40,64 @@ export default {
       });
     }
   },
+  async getMyPosts(req, res) {
+    try {
+      const userId = req.params.userId;
+
+      const posts = await postModel
+        .find({ userId })
+        .sort({ createdAt: -1 })
+        .populate("userId", "username");
+
+      if (!posts || posts.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Belum ada postingan saat ini!",
+          data: [],
+        });
+      }
+
+      const dataComplete = await Promise.all(
+        posts.map(async (post) => {
+          const userProfile = await profileModel.findOne({
+            userId: post.userId._id,
+          });
+
+          const postObj = post.toObject();
+
+          if (postObj.userId) {
+            postObj.userId.photo_profile_url = userProfile
+              ? userProfile.photo_profile_url
+              : "profile.png";
+          }
+
+          const likeCount = await likeModel.countDocuments({
+            postId: post._id,
+          });
+          const commentCount = await commentModel.countDocuments({
+            postId: post._id,
+          });
+
+          postObj.commentCount = commentCount;
+          postObj.likeCount = likeCount;
+          return postObj;
+        }),
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Berhasil mendapatkan postingan Anda!",
+        data: dataComplete,
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+        data: null,
+      });
+    }
+  },
+
   async showCase(req, res) {
     try {
       const posts = await postModel

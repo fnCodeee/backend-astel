@@ -22,6 +22,7 @@ router.put("/profiles/me", authMiddleware, profilesController.updateProfile);
 router.get("/profiles/:userId", authMiddleware, profilesController.getProfile);
 
 // ENDPOINT:POST
+router.get("/profiles/:userId/posts", authMiddleware, postController.getMyPosts);
 router.get("/posts/:postId", authMiddleware, postController.getPostDetail);
 router.get("/posts", postController.showCase); // tidak perlu authMiddleware
 router.post("/posts", authMiddleware, postController.createPost);

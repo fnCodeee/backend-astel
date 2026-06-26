@@ -126,6 +126,7 @@ export default {
       const responseData = {
         userId: user._id,
         username: user.username,
+        email: profile.email,
         fullName: profile.fullName,
         bio: profile.bio,
         photo_profile_url: profile.photo_profile_url,
