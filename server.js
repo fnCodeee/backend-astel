@@ -5,13 +5,12 @@ import cors from "cors";
 import router from "./src/router/api.js";
 import mongoose from "mongoose";
 
-
 const app = express();
 const port = PORT;
 
 async function init() {
   await connectDB();
-  if(mongoose.connection.readyState ===1) {
+  if (mongoose.connection.readyState === 1) {
     console.log("Database connected");
   } else {
     console.log("Database not connected");
@@ -24,12 +23,12 @@ async function init() {
   );
   app.use(express.json());
   app.use("/api", router);
-  app.get('/', (req, res) => {
-    res.json("Server Berhasil dijalankan!")
-  })
+  app.get("/", (req, res) => {
+    res.json("Server Berhasil dijalankan!");
+  });
   app.listen(port, () => {
     console.log(`Running at port ${port}`);
   });
 }
 
-  init();
+init();
