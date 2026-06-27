@@ -108,13 +108,11 @@ export default {
   async yourCollabPost(req, res) {
     try {
       const { userId } = req.params;
+
       const collabMe = await collabModel
-        .find({
-          userId: userId,
-        })
+        .find({ userId })
         .populate("userId", "username");
 
-      const user = await userModel.findById(userId);
       if (!collabMe || collabMe.length === 0) {
         return res.status(404).json({
           success: false,
@@ -123,13 +121,33 @@ export default {
         });
       }
 
-      res.status(200).json({
+      const user = await userModel.findById(userId).select("username");
+
+      const profile = await profileModel
+        .findOne({ userId })
+        .select("photo_profile_url");
+
+      const photoProfile =
+        profile?.photo_profile_url || "/images/default-avatar.png";
+
+      const dataCompleteCollab = collabMe.map((collab) => {
+        const collabObj = collab.toObject();
+
+        collabObj.userId = {
+          ...collabObj.userId,
+          photo_profile_url: photoProfile,
+        };
+
+        return collabObj;
+      });
+
+      return res.status(200).json({
         success: true,
         message: `Your Collaboration Post, ${user.username}`,
-        data: collabMe,
+        data: dataCompleteCollab,
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message,
         data: null,
