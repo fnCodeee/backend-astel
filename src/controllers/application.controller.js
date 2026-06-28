@@ -116,9 +116,10 @@ export default {
     try {
       // owner: lihat pelamar di setiap collaboration
       const { collabId } = req.params;
+
       const collab = await collabModel.findById(collabId);
 
-      if (!collab || collab.length === 0) {
+      if (!collab) {
         return res.status(404).json({
           success: false,
           message: "Collaboration not found",
@@ -134,17 +135,34 @@ export default {
         });
       }
 
-      const applicant = await collaborationApplicationModel
+      const applicants = await collaborationApplicationModel
         .find({ collabId })
         .populate("userId", "username");
 
-      res.status(200).json({
+      const applicantWithProfile = await Promise.all(
+        applicants.map(async (applicant) => {
+          const profile = await profileModel.findOne(
+            { userId: applicant.userId._id },
+            "photo_profile_url",
+          );
+
+          return {
+            ...applicant.toObject(),
+            userId: {
+              ...applicant.userId.toObject(),
+              photo_profile_url: profile?.photo_profile_url || null,
+            },
+          };
+        }),
+      );
+
+      return res.status(200).json({
         success: true,
         message: "List of applicants",
-        data: applicant,
+        data: applicantWithProfile,
       });
     } catch (error) {
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: error.message,
         data: null,
