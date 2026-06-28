@@ -6,6 +6,7 @@ import postController from "../controllers/post.controller.js";
 import skillModel from "../model/skill.model.js";
 import collabController from "../controllers/collab.controller.js";
 import applicationController from "../controllers/application.controller.js";
+import optionalAuth from "../middlewares/optionalAuth.middlware.js";
 
 const router = Router();
 
@@ -24,7 +25,7 @@ router.get("/profiles/:userId", authMiddleware, profilesController.getProfile);
 // ENDPOINT:POST
 router.get("/profiles/:userId/posts", authMiddleware, postController.getMyPosts);
 router.get("/posts/:postId", authMiddleware, postController.getPostDetail);
-router.get("/posts", postController.showCase); // tidak perlu authMiddleware
+router.get("/posts", optionalAuth, postController.showCase); // tidak perlu authMiddleware
 router.post("/posts", authMiddleware, postController.createPost);
 router.put("/posts/:postId", authMiddleware, postController.updatePosts);
 router.delete("/posts/:postId", authMiddleware, postController.deletePost);

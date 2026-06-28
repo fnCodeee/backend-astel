@@ -100,6 +100,9 @@ export default {
 
   async showCase(req, res) {
     try {
+      const userId = req.user?.id;
+      console.log(userId);
+
       const posts = await postModel
         .find()
         .sort({ createdAt: -1 })
@@ -112,6 +115,8 @@ export default {
           data: [],
         });
       }
+      let isLiked = false;
+
       const dataComplete = await Promise.all(
         posts.map(async (post) => {
           const userProfile = await profileModel.findOne({
@@ -125,18 +130,29 @@ export default {
               ? userProfile.photo_profile_url
               : "profile.png";
           }
+
           const likeCount = await likeModel.countDocuments({
             postId: post._id,
           });
+
           const commentCount = await commentModel.countDocuments({
             postId: post._id,
           });
+          if (userId) {
+            isLiked = !!(await likeModel.exists({
+              postId: post._id,
+              userId,
+            }));
+          }
 
           postObj.commentCount = commentCount;
           postObj.likeCount = likeCount;
+          postObj.isLiked = !!isLiked;
+
           return postObj;
         }),
       );
+
       res.status(200).json({
         success: true,
         message: "Berhasil mendapatkan semua Postingan!",
@@ -148,6 +164,7 @@ export default {
         message: error.message,
         data: null,
       });
+      console.log(error);
     }
   },
 
@@ -158,11 +175,7 @@ export default {
 
       // Increment viewCount dan ambil post yang sudah diupdate
       const post = await postModel
-        .findByIdAndUpdate(
-          postId,
-          { $inc: { viewCount: 1 } },
-          { new: true }
-        )
+        .findByIdAndUpdate(postId, { $inc: { viewCount: 1 } }, { new: true })
         .populate("userId", "username");
 
       if (!post) {

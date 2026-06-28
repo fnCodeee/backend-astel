@@ -24,6 +24,10 @@ const profileSchema = new Schema({
     type: String,
     required: true,
   },
+  photo_profile_public_id: {
+    type: String,
+    default: "",
+  },
   socialMedia: [
     {
       platform: { type: String, required: true },
