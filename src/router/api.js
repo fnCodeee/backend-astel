@@ -40,6 +40,7 @@ router.delete("/delete/comments/:commentId", authMiddleware, postController.dele
 // COLLAB :
 router.get("/profiles/:userId/collab", authMiddleware, collabController.yourCollabPost)
 router.get("/collab", authMiddleware, collabController.showCollab)
+router.get("/collab/inbox", authMiddleware, applicationController.getApplicants);
 router.get("/collab/:id", authMiddleware, collabController.getCollabDetail)
 router.post("/collab", authMiddleware, collabController.addCollab);
 router.put("/collab/:id", authMiddleware, collabController.updateCollab);
@@ -57,7 +58,6 @@ router.get("/skills", authMiddleware, async (req, res) => {
 
 
 // APPLICATION
-router.get("/collab/:collabId/applications", authMiddleware, applicationController.getApplicants);
 router.get("/myapplications", authMiddleware, applicationController.myApplications);
 router.get("/myapplications/:applicationId", authMiddleware, applicationController.myApplicationDetail);
 

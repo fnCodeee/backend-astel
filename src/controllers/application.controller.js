@@ -114,31 +114,43 @@ export default {
 
   async getApplicants(req, res) {
     try {
-      // owner: lihat pelamar di setiap collaboration
-      const { collabId } = req.params;
+      // 1. Cari semua collaboration milik user login
+      const collabs = await collabModel.find(
+        { userId: req.user.id },
+        "_id title userId",
+      );
 
-      const collab = await collabModel.findById(collabId);
-
-      if (!collab) {
-        return res.status(404).json({
-          success: false,
-          message: "Collaboration not found",
-          data: null,
+      if (collabs.length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: "You don't have any collaboration yet",
+          data: [],
         });
       }
 
-      if (collab.userId.toString() !== req.user.id) {
-        return res.status(403).json({
-          success: false,
-          message: "You are not the owner of this collaboration",
-          data: null,
-        });
-      }
+      // 2. Ambil semua id collaboration
+      const collabIds = collabs.map((collab) => collab._id);
 
+      // 3. Cari semua applicant
       const applicants = await collaborationApplicationModel
-        .find({ collabId })
-        .populate("userId", "username");
+        .find({
+          collabId: { $in: collabIds },
+        })
+        .populate({
+          path: "userId",
+          select: {
+            username: 1,
+          },
+        })
+        .populate({
+          path: "collabId",
+          select: {
+            title: 1,
+            userId: 1,
+          },
+        });
 
+      // 4. Tambahkan photo profile
       const applicantWithProfile = await Promise.all(
         applicants.map(async (applicant) => {
           const profile = await profileModel.findOne(
@@ -162,11 +174,13 @@ export default {
         data: applicantWithProfile,
       });
     } catch (error) {
-      return res.status(500).json({
+      res.status(500).json({
         success: false,
         message: error.message,
         data: null,
       });
+      console.log(error);
+      return;
     }
   },
   async myApplications(req, res) {
