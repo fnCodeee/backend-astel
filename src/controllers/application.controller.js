@@ -164,6 +164,7 @@ export default {
             title: 1,
             description: 1,
             mediaUrls: 1,
+            communicationUrl: 1,
           },
           populate: {
             path: "userId",
@@ -188,12 +189,11 @@ export default {
       profiles.forEach((profile) => {
         profileMap[profile.userId.toString()] = profile;
       });
-
+      console.log(application);
       const dataComplete = application.map((app) => {
         const ownerId = app.collabId.userId._id.toString();
 
         const profile = profileMap[ownerId];
-
         return {
           applicationId: app._id,
           status: app.status,
@@ -209,6 +209,13 @@ export default {
             username: app.collabId.userId.username,
             photo_profile_url: profile?.photo_profile_url || "profile.png",
           },
+
+          ...(app.status === "accepted" && {
+            communicationUrl: app.collabId.communicationUrl,
+          }),
+
+          createdAt: app.createdAt,
+          updatedAt: app.updatedAt,
         };
       });
 
