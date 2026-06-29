@@ -434,10 +434,29 @@ export default {
         content,
       });
 
+      const newComment = await commentModel
+        .findById(comment._id)
+        .populate("userId", "username");
+      const profile = await profileModel.findOne({
+        userId: newComment.userId._id,
+      });
+
+      const dataComplete = {
+        _id: newComment._id,
+        userId: {
+          _id: newComment.userId._id,
+          username: newComment.userId.username,
+          photo_profile_url: profile?.photo_profile_url || "profile.png",
+        },
+        postId: newComment.postId,
+        content: newComment.content,
+        createdAt: newComment.createdAt,
+        updatedAt: newComment.updatedAt,
+      };
       res.status(200).json({
         success: true,
         message: "Success create comment!",
-        data: comment,
+        data: dataComplete,
       });
     } catch (error) {
       res.status(500).json({
