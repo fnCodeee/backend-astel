@@ -207,6 +207,33 @@ export default {
         .find({ postId })
         .populate("userId", "username")
         .sort({ createdAt: -1 });
+
+      // Ambil semua userId dari komentar
+      const userIds = comments.map((comment) => comment.userId._id);
+
+      // Ambil semua profile yang berkaitan
+      const profiles = await profileModel.find({
+        userId: { $in: userIds },
+      });
+
+      // Buat Map<userId, profile>
+      const profileMap = new Map(
+        profiles.map((profile) => [profile.userId.toString(), profile]),
+      );
+
+      // Gabungkan photo_profile_url ke setiap comment
+      const commentsWithProfile = comments.map((comment) => {
+        const profile = profileMap.get(comment.userId._id.toString());
+
+        return {
+          ...comment.toObject(),
+          userId: {
+            ...comment.userId.toObject(),
+            photo_profile_url: profile?.photo_profile_url || "profile.png",
+          },
+        };
+      });
+
       const { userId: _, ...postWithoutUserId } = post.toObject();
       res.status(200).json({
         success: true,
@@ -222,7 +249,7 @@ export default {
           likeCount,
           commentCount,
           isLiked: !!isLiked,
-          comments,
+          comments: commentsWithProfile,
         },
       });
     } catch (error) {
